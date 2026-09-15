@@ -1,0 +1,69 @@
+# Local agent context (kept on this machine at the user's request)
+/AGENTS.md
+
+# Raw data: current layout and intended conventional layout
+/Data/
+/data/raw/
+# Protect the four competition files even if downloaded elsewhere in the project.
+train.csv
+test.csv
+txs_edgelist.csv
+sample_submission.csv
+/data/interim/
+/data/processed/
+
+# Generated analysis, models, experiment logs, and prediction CSVs
+/reports/data_audit/
+/outputs/
+/artifacts/
+/models/
+/submissions/
+/mlruns/
+/wandb/
+*.log
+
+# Python environments and caches
+.venv/
+venv/
+env/
+.env/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Credentials and local configuration (never store secrets in notebooks)
+.env
+.env.*
+!.env.example
+.secrets/
+secrets/
+credentials/
+credentials*.json
+*credentials*.json
+*service-account*.json
+kaggle.json
+.kaggle/
+.ssh/
+api_keys.*
+tokens.json
+secrets.*
+*.pem
+*.key
+*.p12
+
+# OS/editor files
+.DS_Store
+._*
+.idea/
+.vscode/
+*.swp
+*.swo

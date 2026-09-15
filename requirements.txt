@@ -1,0 +1,8 @@
+# Direct dependencies for the audit and executable baseline notebook (Python 3.12).
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.1
+threadpoolctl==3.5.0
+jupyterlab==4.0.11
+ipykernel==6.29.5
+nbconvert==7.10.0
