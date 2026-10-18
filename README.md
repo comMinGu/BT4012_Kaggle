@@ -1,172 +1,158 @@
 # BT4012_Kaggle
 
-Bitcoin Fraud Analytics — BT4012
+Bitcoin Fraud Analytics — individual BT4012 university Kaggle competition.
+**Metric: ROC-AUC. Class 0 = negative; class 1 = positive / illicit.**
 
-Individual university Kaggle competition: classify Bitcoin transactions as illicit
-or licit using transaction features and a payment-flow graph. **ROC-AUC** is the
-competition metric. The user confirms **0 = negative, 1 = positive / illicit**.
+## Current results
 
-The first end-to-end baseline has been executed successfully. It uses only the
-165 anonymized transaction features and labelled observations. No graph features,
-GNN, pseudo-labels, or hyperparameter search are used. Nothing has been submitted
-to Kaggle automatically.
+E01 Logistic Regression is preserved: local AUC **0.917141**, public Kaggle AUC
+**0.88776** (reported by the user). The latest experiment evaluates LightGBM and
+XGBoost with and without time across three rolling temporal folds.
 
-## Repository structure
+| ID | Model | Time feature | Fold 1 | Fold 2 | Latest / fold 3 | Mean | Std (ddof=0) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E01-R | Logistic Regression | No | 0.894508 | 0.933691 | 0.917141 | 0.915113 | 0.016060 |
+| E02 | LightGBM | No | 0.921677 | 0.994402 | 0.998148 | 0.971409 | 0.035199 |
+| E03 | LightGBM | Yes | 0.931117 | 0.994504 | 0.998137 | 0.974586 | 0.030773 |
+| E04 | XGBoost | No | 0.940656 | 0.995593 | 0.997495 | 0.977915 | 0.026357 |
+| E05 | XGBoost | Yes | 0.939144 | 0.995304 | 0.997513 | 0.977320 | 0.027010 |
+
+**Selected: E04, XGBoost without `time_step`.** It combines a latest AUC within
+0.002 of the best with the strongest mean and lowest boosted-model fold spread.
+Its new Kaggle score is unknown; local AUC is not a leaderboard prediction.
+See [full results and interpretation](docs/tabular_v2_results.md) and the
+[experiment log](experiments/results.csv).
+
+## Layout
 
 ```text
-data/raw/                    Four unchanged competition CSVs; ignored by Git
-notebooks/01_baseline.ipynb   Executed baseline, with 11 clear sections
-src/                         Reserved for helpers when reuse is needed
-scripts/audit_data.py         Standalone detailed data audit
-outputs/                     Generated submission and aggregate run record; ignored
-docs/data_audit.md            Reviewed detailed audit summary
-docs/raw_manifest.json        Original file hashes and current raw location
-docs/baseline_results.md      Baseline configuration, results, and limitations
-requirements.txt             Pinned direct project dependencies
+data/raw/                                  Immutable competition CSVs; ignored
+notebooks/01_baseline.ipynb                  Preserved E01 Logistic Regression
+notebooks/02_boosted_tree_experiments.ipynb   Rolling tabular experiments and submission
+experiments/                               Versionable aggregate results/configurations
+scripts/audit_data.py                       Detailed read-only dataset audit
+src/                                       Helpers only when reuse warrants them
+outputs/                                   Predictions and generated run metadata; ignored
+docs/                                      Reviewed data audit and experiment reports
+requirements.txt                           Pinned direct project dependencies
 ```
 
-The raw files were relocated from `Data/` to `data/raw/` without changing their
-SHA-256 hashes. Download/place the four competition files there when cloning the
-repository. Raw files, predictions, credentials, and local environments are not
-part of the repository. The parent folder need not have a specific name.
+The original raw files were relocated from `Data/` to `data/raw/` without changing
+their SHA-256 hashes. Place the four downloaded CSVs there after cloning. The
+parent directory name does not affect execution.
 
-## Dataset files and verified structure
+## Dataset
 
 | File | Rows | Columns | Contents |
 | --- | ---: | ---: | --- |
-| `train.csv` | 141,772 | 168 | `txId`, `time_step`, `feat_1`–`feat_165`, nullable `label` |
+| `train.csv` | 141,772 | 168 | `txId`, `time_step`, 165 anonymized features, nullable `label` |
 | `test.csv` | 15,329 | 168 | `index`, `txId`, `time_step`, same 165 features |
 | `txs_edgelist.csv` | 234,355 | 2 | Directed endpoint convention `txId1 -> txId2` |
-| `sample_submission.csv` | 15,329 | 2 | `index,target`; placeholder target 0.5 |
+| `sample_submission.csv` | 15,329 | 2 | `index,target` placeholder template |
 
-Training has **31,235 labelled rows**: 27,591 class 0 and 3,644 class 1
-(**11.6664% illicit**). Another 110,537 rows have unknown labels and are excluded
-from model fitting. Train time steps are 1–35; test time steps are 36–49.
-All values/counts above were checked against the actual CSVs, not assumed.
+There are **31,235 labelled training rows**: 27,591 negative and 3,644 positive
+(11.6664% positive), plus 110,537 unlabelled rows excluded from all model fitting.
+Train covers steps 1–35; test covers 36–49. No missing/infinite features or duplicate
+transaction IDs were found. Thirteen identical-feature groups cover 44 distinct
+training transactions; these were retained. The graph has 46,668 endpoints without
+supplied feature rows. No graph information is used in the models.
 
-No feature missingness or infinity, duplicate transaction IDs, or train/test ID
-overlap was found. Submission keys match. There are 13 groups covering 44 distinct
-training transactions with identical features and no conflicting known labels;
-all are retained. The full graph contains 203,769 nodes, of which 46,668 have no
-supplied feature row. The edge list is inspected but never used by this baseline.
-Anonymous feature meanings, construction history, and time-step duration remain
-undocumented. See the [detailed audit](docs/data_audit.md).
+Feature meanings, construction history, and the calendar duration of a time step
+remain undocumented. [Data audit](docs/data_audit.md) and
+[raw manifest](docs/raw_manifest.json) provide details.
 
-## Baseline and validation
+## Evaluation and models
 
-Features are exactly `feat_1`–`feat_165`; exclude `txId`, `index`, `label`, and
-`time_step`. Preserve time only for splitting and analysis. In working copies,
-infinite values become missing. The pipeline fits median imputation, standard
-scaling, and L2 logistic regression (`C=1`, `solver=lbfgs`, `class_weight=balanced`,
-`max_iter=3000`, `tol=1e-4`, seed 42). Numerical work is restricted to one thread.
-A completely missing fitting column stops execution for review.
+| Fold | Fitting period | Validation period | Fitting rows | Validation rows |
+| --- | --- | --- | ---: | ---: |
+| 1 | 1–20 | 21–25 | 18,889 | 5,311 |
+| 2 | 1–25 | 26–30 | 24,200 | 2,705 |
+| 3 | 1–30 | 31–35 | 26,905 | 4,330 |
 
-Balanced weights give equal total loss weight to each class. This is a documented
-starting choice for the imbalance; no weighting/parameter search was performed.
-Weights can affect probability calibration and the threshold precision/recall tradeoff.
+Use labelled rows only and identical masks across models. Mean is unweighted;
+standard deviation uses `ddof=0`. It describes three-fold variation, not uncertainty
+in future performance. The original E01 holdout corresponds to fold 3; E01-R
+reevaluates its unchanged specification across all three folds in notebook 02.
 
-| Set | Time steps | Rows | Class 0 | Class 1 | Illicit share |
-| --- | --- | ---: | ---: | ---: | ---: |
-| Fit | 1–30 | 26,905 | 23,951 | 2,954 | 10.9794% |
-| Validation | 31–35 | 4,330 | 3,640 | 690 | 15.9353% |
-| Final refit | 1–35 | 31,235 | 27,591 | 3,644 | 11.6664% |
+Boosted models use 400 rounds, learning rate 0.05, shallow trees, seed 42, one
+numerical thread, and fitting-only negative/positive class-ratio weights. There is
+no outer-fold early stopping or parameter search. Infinities become NaN in working
+copies; trees use native missing handling. Features are `feat_1`–`feat_165`, plus
+`time_step` only in E03/E05. IDs and `label` are always excluded. Unlabelled rows,
+validation labels, and test data never fit preprocessing or class weights.
 
-Imputation/scaling are fitted on fitting-period rows only during validation.
-Validation is chronological; no random primary split is used. After evaluation,
-a cloned pipeline is refitted on all labelled training rows for test predictions.
+The prespecified selection rule prioritizes latest AUC within a 0.002 near-tie
+band, then mean within 0.001, then lower fold spread. E04 is refitted on all labelled
+steps 1–35 without retuning. No GNN, graph features, pseudo-labels, or random primary
+cross-validation are used. See [experiment conventions](experiments/README.md).
 
-| Validation metric | Value |
-| --- | ---: |
-| ROC-AUC, continuous class-1 probabilities | 0.917141 |
-| Precision at threshold 0.5 | 0.342944 |
-| Recall at threshold 0.5 | 0.982609 |
-| F1 at threshold 0.5 | 0.508436 |
+## Install and execute
 
-Confusion matrix: rows = actual, columns = predicted, order `[0, 1]`:
-
-```text
-[[2341, 1299],
- [  12,  678]]
-```
-
-ROC-AUC is threshold-independent. Precision/recall/F1 and the matrix use the
-untuned 0.5 threshold. High recall comes with many false positives. Validation
-prevalence is higher than fitting prevalence; these metrics are not test-set scores.
-Both fits converged (191 iterations for validation, 209 for final fitting).
-
-## Install and run
-
-Verified environment: **Python 3.12.4**. From the repository root:
+Use **Python 3.12** (verified on 3.12.4):
 
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python -m ipykernel install --sys-prefix --name bt4012-baseline --display-name "BT4012 baseline"
-jupyter lab notebooks/01_baseline.ipynb
+jupyter lab notebooks/02_boosted_tree_experiments.ipynb
 ```
 
-Choose the **BT4012 baseline** kernel, then restart and run all cells. If `python`
-already points to Python 3.12, it can be used to create the environment instead.
-The kernel is installed within the virtual environment, not globally.
-
-For a clean, headless execution:
+Choose **BT4012 baseline**, restart the kernel, and run all cells. The kernel is
+installed inside the environment. If `python` already points to Python 3.12, use
+it to create the environment. For a fresh headless execution:
 
 ```bash
 jupyter nbconvert --to notebook --execute --inplace \
   --ExecutePreprocessor.kernel_name=bt4012-baseline \
-  --ExecutePreprocessor.timeout=600 notebooks/01_baseline.ipynb
+  --ExecutePreprocessor.timeout=900 notebooks/02_boosted_tree_experiments.ipynb
 ```
 
-To rerun the detailed audit separately:
+Notebook 02 does not require rerunning or overwriting notebook 01. It preserves
+any existing E01 output artifacts. The audit can still run separately:
 
 ```bash
 python scripts/audit_data.py
 ```
 
-The notebook prints aggregate checks/results without embedding raw records or
-individual predictions. The notebook runs in memory; leave room for the roughly
-515 MB of raw CSV data plus processing arrays. Package versions, feature list,
-model configuration, split counts, metrics, and raw hashes are recorded for each run.
+Experiments use in-memory data and CPU fitting. `outputs/tabular_fold_progress.csv`
+records aggregate progress as each fold completes. A successful notebook execution
+ends with the final submission checks and experiment-log update; partial progress
+alone is not a completed run.
 
-## Generated outputs
+## Outputs and recording
 
-- **`outputs/submission_baseline.csv`**: exactly `index,target`, 15,329 rows.
-  `target` contains class-1 probabilities. A one-to-one join to the sample template
-  preserves its keys/order. Row count, indices, uniqueness, finite values, missingness,
-  and probability bounds are checked before writing and after reading the CSV back.
-- **`outputs/baseline_metrics.json`**: aggregate results and reproducibility metadata.
-- `reports/data_audit/`: detailed audit tables and reports.
+- `outputs/submission_baseline.csv`: original E01 submission, if already generated.
+- **`outputs/submission_tabular_v2.csv`**: selected model's class-1 probabilities,
+  15,329 rows, exactly `index,target`, in sample-template order.
+- `outputs/tabular_v2_metrics.json`: complete aggregate run/selection metadata.
+- `experiments/results.csv`: persistent E01/E01-R/E02–E05 comparison and manual
+  Kaggle-score fields; new Kaggle scores remain blank until reported.
+- Other `experiments/` CSV/JSON files: fold counts, fold scores, time comparison,
+  and exact reproducibility configuration.
 
-All generated outputs are ignored by Git. Rerunning overwrites the baseline output
-files. The final model is reproduced by rerunning the notebook; no fitted-model
-binary is committed. No Kaggle submission command is executed.
+Submission checks cover columns, row count, exact keys/order, index uniqueness,
+missingness, finite probabilities in [0,1], and CSV reload. Re-running the same
+experiment updates only its own aggregate rows and tabular-v2 output. Changed
+configurations require new experiment IDs. No code submits to Kaggle automatically.
 
-## GitHub and safety
+## Repository safety
 
-Use only the existing repository:
-**https://github.com/comMinGu/BT4012_Kaggle.git**. Do not create a replacement repo,
-force-push, or overwrite an existing remote/history. Preserve the user's private
-competition workflow; do not publish to a public repository without explicit approval.
+Existing remote: **https://github.com/comMinGu/BT4012_Kaggle.git**. It is private;
+keep it private unless explicitly instructed otherwise. Preserve existing remote
+history and never force-push. Raw CSVs, prediction outputs, environments, caches,
+notebook checkpoints, OS metadata, secrets, and local agent notes are ignored.
+Review staged contents before committing; `.gitignore` cannot protect secrets
+pasted into source or previously tracked files. Notebook outputs contain aggregates
+only. No raw records or individual predictions should be committed.
 
-Before committing, review `git status`, `git diff --cached --stat`, and staged paths.
-`.gitignore` protects the raw directory, all four raw CSV names anywhere, outputs,
-environments, caches, notebook checkpoints, metadata, and common secret files.
-It cannot protect secrets manually pasted into code or files already tracked by Git.
+## Interpretation and next step
 
-The existing repository initially had one README commit. Local `main` is based on
-that history, and `origin` points to the URL above. Authenticated Git fetch succeeded.
-The repository was initially public and was changed to **private**, then verified,
-to honour the requested competition privacy. No existing commits were removed.
+Boosted trees improve all three folds relative to the linear reference, consistent
+with nonlinear thresholds and feature interactions. Time helps LightGBM's mean
+but slightly harms XGBoost's mean/stability; its latest-period effect is negligible
+for both. Every model still performs worst in fold 1, so a high latest AUC does not
+resolve temporal generalization concerns. See the [results report](docs/tabular_v2_results.md).
 
-GitHub CLI (`gh`) was unavailable in the execution environment. If authentication
-is needed, install it locally with `brew install gh`, then run `gh auth login` and
-`gh auth setup-git`. Never paste tokens into this notebook or a Git remote URL.
-
-## Next experiment
-
-Compare the same logistic-regression pipeline with `class_weight=None` on the
-same fixed temporal split. Compare ROC-AUC and the threshold metrics to understand
-how weighting affects ranking and false positives. Keep this run as the reference;
-no graph feature engineering or extensive tuning yet. Additional time cutoffs can
-later assess how stable the result is across periods.
+Keep the configurations fixed, record the next manually obtained Kaggle score, and
+inspect per-time-step validation AUC to locate weak periods. No graph engineering yet.

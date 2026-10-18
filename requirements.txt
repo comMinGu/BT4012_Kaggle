@@ -1,7 +1,9 @@
-# Direct dependencies for the audit and executable baseline notebook (Python 3.12).
+# Direct dependencies for the audit and executable experiment notebooks (Python 3.12).
 numpy==1.26.4
 pandas==2.2.2
 scikit-learn==1.5.1
+lightgbm==4.6.0
+xgboost==3.0.5
 threadpoolctl==3.5.0
 jupyterlab==4.0.11
 ipykernel==6.29.5

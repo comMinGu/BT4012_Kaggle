@@ -27,6 +27,11 @@ converged; no convergence warnings were suppressed.
 | Recall at 0.5 | 0.982608696 |
 | F1 at 0.5 | 0.508436445 |
 
+**E01 public Kaggle ROC-AUC: 0.88776**, reported by the user after manual submission.
+The local/public gap is approximately 0.029381. The user also reports an approximate
+competition benchmark of 0.92; that benchmark has not been independently verified.
+Future-period shift and public-subset differences can both contribute to this gap.
+
 ROC-AUC uses continuous class-1 probabilities. Other metrics use an untuned 0.5
 threshold. Confusion matrix: TN=2,341, FP=1,299, FN=12, TP=678. The constant-score
 reference has ROC-AUC 0.5. No test ROC-AUC is available.
@@ -53,7 +58,8 @@ Validation illicit prevalence (15.94%) exceeds fitting prevalence (10.98%), whic
 reinforces the importance of temporal evaluation. Class weighting can affect
 probability calibration; no claim is made that these scores are calibrated risks.
 
-Next compare `class_weight=None` with the same pipeline and time split. Keep this
-baseline fixed for comparison. Do not tune repeatedly against one holdout or use
-validation/test labels in preprocessing. The supplied anonymous features' creation
-history remains unknown; no graph features are used.
+The follow-up experiment is `notebooks/02_boosted_tree_experiments.ipynb`: rolling
+temporal validation of LightGBM and XGBoost, with and without `time_step`. E01's
+notebook and output artifacts remain fixed. Do not tune repeatedly against one
+holdout or use validation/test labels in preprocessing. The supplied anonymous
+features' creation history remains unknown; no graph features are used.

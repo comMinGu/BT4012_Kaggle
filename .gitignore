@@ -1,5 +1,7 @@
 # Local agent context (kept on this machine at the user's request)
 /AGENTS.md
+/.agents/
+/.codex/
 
 # Raw data: current layout and intended conventional layout
 /Data/
