@@ -3,6 +3,13 @@
 /.agents/
 /.codex/
 
+# Earlier project files remain local; the current notebook is self-contained.
+/docs/
+/experiments/
+/notebooks/
+/scripts/
+/src/
+
 # Raw data: current layout and intended conventional layout
 /Data/
 /data/raw/
