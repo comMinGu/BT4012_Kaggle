@@ -1,4 +1,4 @@
-# BT4012 Fraud Analytics — E0906431
+# BT4012 Fraud Analytics - E0906431
 
 - **[e0906431.ipynb](e0906431.ipynb):** all preprocessing, model definitions, validation, training and submission generation in one notebook.
 - **[requirements.txt](requirements.txt):** Python package dependencies.
