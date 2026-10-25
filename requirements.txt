@@ -1,8 +1,7 @@
-# Reproduced on Python 3.12.4; final V22 and preserved baseline notebook.
+# Dependencies for the self-contained e0906431.ipynb (Python 3.12.4).
 numpy==1.26.4
 pandas==2.2.2
 scipy==1.13.1
-networkx==3.5
 psutil==7.2.2
 scikit-learn==1.5.1
 lightgbm==4.6.0
