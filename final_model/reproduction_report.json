@@ -1,0 +1,116 @@
+{
+  "passed": true,
+  "date": "2026-10-25",
+  "method": "Fresh final training from the four raw files in a new output directory, without historical predictions or pretrained models as inputs.",
+  "original_v22_sha256": "25dcee6c22846a2937bd00ff9dc118afcb4728ae571423621cebf560e6995d21",
+  "reproduced_csv_sha256": "feaff00f7cf88b3be6e4b887d5a8b01b90b7eb3ab52940fa93ce021abbbf7c2d",
+  "rows": 15329,
+  "maximum_absolute_difference": 8.326672684688674e-16,
+  "exact_rank_order_and_ties": true,
+  "component_checks": {
+    "V4": {
+      "maximum_absolute_difference": 0.0,
+      "spearman": 0.9999999999999998,
+      "exact_ranks": true
+    },
+    "V5": {
+      "maximum_absolute_difference": 0.0,
+      "spearman": 1.0,
+      "exact_ranks": true
+    },
+    "C37": {
+      "maximum_absolute_difference": 0.0,
+      "spearman": 0.9999999999999998,
+      "exact_ranks": true
+    },
+    "V9": {
+      "maximum_absolute_difference": 2.220446049250313e-16,
+      "spearman": 0.9999999992554095,
+      "exact_ranks": false
+    },
+    "V14": {
+      "maximum_absolute_difference": 4.440892098500626e-16,
+      "spearman": 0.9999999998900602,
+      "exact_ranks": false
+    },
+    "V21": {
+      "maximum_absolute_difference": 4.440892098500626e-16,
+      "spearman": 0.9999999999983342,
+      "exact_ranks": false
+    },
+    "V22": {
+      "maximum_absolute_difference": 8.326672684688674e-16,
+      "spearman": 1.0,
+      "exact_ranks": true
+    }
+  },
+  "learned_gate_checks": {
+    "direct": {
+      "edge_rows": 12724,
+      "seeds": 3,
+      "native_probabilities_exact": true
+    },
+    "siblings": {
+      "edge_rows": 47112,
+      "seeds": 3,
+      "native_probabilities_exact": true
+    }
+  },
+  "new_final_models": 25,
+  "training_cutoff": 35,
+  "query_steps": [
+    36,
+    49
+  ],
+  "known_fit_rows": 31235,
+  "python": "3.12.4",
+  "versions": {
+    "numpy": "1.26.4",
+    "pandas": "2.2.2",
+    "scipy": "1.13.1",
+    "scikit-learn": "1.5.1",
+    "xgboost": "3.0.5",
+    "catboost": "1.2.8",
+    "torch": "2.4.0",
+    "joblib": "1.4.2",
+    "threadpoolctl": "3.5.0"
+  },
+  "source_sha256": {
+    "final_model/__init__.py": "184bb975c097e0c508ba3c036fe3d14fc2665477129d987e576f860cc9ea0fad",
+    "final_model/target_graph.py": "c483e54dd229fd461bb4cfd38135afd5a737fece1e50d9b94626e8cf7508b671",
+    "final_model/pipeline.py": "f270bcaf2adc5db831f799f7fc8896d2f8603d8931f8de648633555b627993f2",
+    "final_model/reference_components.py": "ec67eaeba3a59d714f1ddfad3820e6352692a22731ffd78b9d77236cff3cc425"
+  },
+  "public_auc_of_original_submission": 0.95716,
+  "private_auc_attributed_to_v22": null,
+  "limitations": "Public AUC belongs to the original submitted file; final team private AUC .94688 has no verified filename attribution. Validation is retrospective/reused. Hardware and libraries may affect neural retraining.",
+  "retrospective_validation": {
+    "cutoff": 30,
+    "known_fit_rows": 26905,
+    "query_rows": 4330,
+    "seeds": [
+      42,
+      52,
+      62
+    ],
+    "seconds": 360.1958620420046,
+    "raw_hashes": {
+      "train.csv": "6f7e56883f0aa27147262a0d71954ad64702ca57f16fbf9ed58fae21a66dd706",
+      "test.csv": "344e47c8cd8815f4072d7f6ecbecee8919ab648294a8eb4ed032a026c3eb91db",
+      "txs_edgelist.csv": "a35053ba68a98e4382cae2ba65b9d9e36b23b6439e02dff084971b1b72a5156e",
+      "sample_submission.csv": "3dba74ad6151053aa21f366fb9faf6da7393969a0ba6f8a2ebcec561871f739e"
+    },
+    "new_model_fits_this_invocation": 25,
+    "validation": "Retrospective fixed final recipe on reused periods; not original adaptive metrics or an untouched holdout.",
+    "auc": 0.9986506609332696
+  },
+  "executed_notebook": "e0906431.ipynb",
+  "executed_code_cells": 4,
+  "notebook_sha256": "52cdf1005c11c001795d9501a33d463e6f99676d8e89fd0f9a83a3ba0ea65671",
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64"
+  },
+  "fresh_final_fit_predict_seconds": 428.5750890420022,
+  "final_model_files_verified": 25
+}
